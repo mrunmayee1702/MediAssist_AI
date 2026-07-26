@@ -17,3 +17,5 @@ transformers
 torch
 
 SpeechRecognition
+
+fpdf2
