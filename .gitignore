@@ -1,0 +1,29 @@
+# Environment variables (contains API keys)
+.env
+
+# Virtual environment
+venv/
+env/
+
+# Database (contains real user data/passwords)
+users.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Vector DB source PDFs (large files, keep out of repo)
+data/medical_books/
+
+# Note: vector_db/ is NOT ignored — it contains the compiled index
+# (medical.index + metadata.pkl) that retriever.py needs to run.
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Downloaded/generated files
+MediAssist_Report_Analysis.pdf
