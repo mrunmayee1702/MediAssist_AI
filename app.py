@@ -885,6 +885,7 @@ with st.sidebar:
         ("🪪 Profile", "profile", "sidebar_profile"),
     ]
 
+<<<<<<< Updated upstream
     def render_nav_button(label, target_page, key):
         is_active = st.session_state.page == target_page
         rail = f"nav-rail-{key.replace('sidebar_', '')}"
@@ -904,6 +905,44 @@ with st.sidebar:
     for label, target_page, key in nav_items:
         render_nav_button(label, target_page, key)
 
+=======
+    nav_items = [
+        ("✦ New Chat", "chat", "sidebar_new_chat"),
+        ("🕘 History", "history", "sidebar_history"),
+    ]
+
+    tools_items = [
+        ("🧾 Report Analysis", "report", "sidebar_report"),
+        ("💊 Medicine Identifier", "medicine", "sidebar_medicine"),
+        ("🗂️ Prescription Explainer", "prescription", "sidebar_prescription"),
+        ("🩻 Symptom Checker", "symptom_checker", "sidebar_symptom_checker"),
+        ("⏰ Reminders", "reminders", "sidebar_reminders"),
+    ]
+
+    account_items = [
+        ("🪪 Profile", "profile", "sidebar_profile"),
+    ]
+
+    def render_nav_button(label, target_page, key):
+        is_active = st.session_state.page == target_page
+        rail = f"nav-rail-{key.replace('sidebar_', '')}"
+        css_class = f"nav-chip {rail}" + (" nav-rail-active" if is_active else "")
+        st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
+        clicked = st.button(label, key=key, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        if clicked:
+            if target_page == "chat":
+                st.session_state.messages = []
+                st.session_state.current_chat_id = None
+                st.session_state.report_analysis = ""
+            st.session_state.page = target_page
+            st.rerun()
+
+    st.markdown("<div class='menu-label'>Conversation</div>", unsafe_allow_html=True)
+    for label, target_page, key in nav_items:
+        render_nav_button(label, target_page, key)
+
+>>>>>>> Stashed changes
     st.markdown("<div class='menu-label'>Health Tools</div>", unsafe_allow_html=True)
     for label, target_page, key in tools_items:
         render_nav_button(label, target_page, key)
