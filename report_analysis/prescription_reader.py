@@ -86,6 +86,7 @@ STRICT RULES:
         ],
         temperature=0.2,
         max_tokens=3000,
+        reasoning_format="hidden",
     )
 
     content = response.choices[0].message.content

@@ -340,6 +340,8 @@ section[data-testid="stSidebar"] .block-container {
 
 /* ---------------- Sidebar signature look ---------------- */
 
+/* ---------------- Sidebar signature look ---------------- */
+
 .sidebar-logo-wrap {
     display: flex;
     align-items: center;
@@ -421,33 +423,82 @@ section[data-testid="stSidebar"] .block-container {
     text-transform: uppercase;
     color: var(--text-dim);
     font-weight: 700;
-    margin: 0.9rem 0 0.4rem 0.1rem;
+    margin: 1rem 0 0.4rem 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
-.st-key-sidebar_new_chat button {
-    border-left: 3px solid var(--accent) !important;
-}
-.st-key-sidebar_new_chat button:hover {
-    background: var(--accent-soft) !important;
-    box-shadow: 0 0 14px rgba(45, 212, 191, 0.25);
-}
-
-.st-key-sidebar_report button {
-    border-left: 3px solid var(--amber) !important;
-}
-.st-key-sidebar_report button:hover {
-    background: var(--amber-soft) !important;
-    box-shadow: 0 0 14px rgba(251, 191, 36, 0.25);
+.menu-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
 }
 
-.st-key-sidebar_history button {
-    border-left: 3px solid var(--accent-3) !important;
-}
-.st-key-sidebar_history button:hover {
-    background: rgba(236, 72, 153, 0.14) !important;
-    box-shadow: 0 0 14px rgba(236, 72, 153, 0.25);
+/* ---- Nav rail buttons ---- */
+
+section[data-testid="stSidebar"] .stButton>button {
+    position: relative;
+    border-radius: 10px !important;
+    border: 1px solid transparent !important;
+    padding-left: 0.9rem !important;
+    margin-left: 4px;
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.25s ease;
 }
 
+/* colored glow chip that sits to the left of the button, outside it —
+   this is the "highlighted" accent piece, brought back and reworked */
+.nav-chip { position: relative; }
+.nav-chip::before {
+    content: "";
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 60%;
+    border-radius: 4px;
+    background: var(--rail-color, var(--accent));
+    opacity: 0.55;
+    box-shadow: 0 0 10px 1px var(--rail-color, var(--accent));
+    transition: opacity 0.2s ease, height 0.2s ease, box-shadow 0.2s ease;
+}
+.nav-chip:hover::before { opacity: 1; height: 72%; }
+
+.nav-rail-new_chat        { --rail-color: var(--accent); }
+.nav-rail-history         { --rail-color: var(--accent-3); }
+.nav-rail-report          { --rail-color: var(--amber); }
+.nav-rail-medicine        { --rail-color: #F87171; }
+.nav-rail-prescription    { --rail-color: var(--accent-2); }
+.nav-rail-symptom_checker { --rail-color: #38BDF8; }
+.nav-rail-reminders       { --rail-color: #FB7185; }
+.nav-rail-profile         { --rail-color: #A78BFA; }
+
+.nav-chip button {
+    background: color-mix(in srgb, var(--rail-color) 8%, var(--panel-2)) !important;
+    border-color: color-mix(in srgb, var(--rail-color) 18%, transparent) !important;
+}
+.nav-chip button:hover {
+    background: color-mix(in srgb, var(--rail-color) 16%, var(--panel-2)) !important;
+    border-color: color-mix(in srgb, var(--rail-color) 45%, transparent) !important;
+    transform: translateX(3px);
+}
+
+/* Active page: full glow treatment — this is the attractive highlight */
+.nav-chip.nav-rail-active::before {
+    opacity: 1;
+    height: 80%;
+    box-shadow: 0 0 16px 3px var(--rail-color, var(--accent));
+    animation: dotPulse 1.8s ease-in-out infinite;
+}
+.nav-chip.nav-rail-active button {
+    background: color-mix(in srgb, var(--rail-color) 22%, var(--panel-2)) !important;
+    border-color: color-mix(in srgb, var(--rail-color) 60%, transparent) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 20px -4px var(--rail-color, var(--accent)), inset 0 0 0 1px rgba(255,255,255,0.08);
+}
 /* ---------------- Headings / text ---------------- */
 
 h1, h2, h3 {
@@ -817,88 +868,49 @@ hr {
 # ---------------------------------------
 
 with st.sidebar:
+    nav_items = [
+        ("✦ New Chat", "chat", "sidebar_new_chat"),
+        ("🕘 History", "history", "sidebar_history"),
+    ]
 
-    st.markdown("""
-        <div class='sidebar-logo-wrap'>
-            <div class='sidebar-avatar-ring'>
-                <div class='sidebar-avatar-inner'>🩺</div>
-            </div>
-            <div>
-                <div class='sidebar-brand-title'>MediAssist AI</div>
-                <div class='sidebar-tagline'>Your Health Companion</div>
-            </div>
-        </div>
-        <div class='status-pill'><span class='status-dot'></span>AI Assistant Online</div>
-    """, unsafe_allow_html=True)
+    tools_items = [
+        ("🧾 Report Analysis", "report", "sidebar_report"),
+        ("💊 Medicine Identifier", "medicine", "sidebar_medicine"),
+        ("🗂️ Prescription Explainer", "prescription", "sidebar_prescription"),
+        ("🩻 Symptom Checker", "symptom_checker", "sidebar_symptom_checker"),
+        ("⏰ Reminders", "reminders", "sidebar_reminders"),
+    ]
 
-    st.markdown("---")
+    account_items = [
+        ("🪪 Profile", "profile", "sidebar_profile"),
+    ]
 
-    if st.button("💬 New Chat", key="sidebar_new_chat", use_container_width=True):
+    def render_nav_button(label, target_page, key):
+        is_active = st.session_state.page == target_page
+        rail = f"nav-rail-{key.replace('sidebar_', '')}"
+        css_class = f"nav-chip {rail}" + (" nav-rail-active" if is_active else "")
+        st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
+        clicked = st.button(label, key=key, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        if clicked:
+            if target_page == "chat":
+                st.session_state.messages = []
+                st.session_state.current_chat_id = None
+                st.session_state.report_analysis = ""
+            st.session_state.page = target_page
+            st.rerun()
 
-        st.session_state.messages = []
-        st.session_state.current_chat_id = None
-        st.session_state.report_analysis = ""
-        st.session_state.page = "chat"
-        st.rerun()
+    st.markdown("<div class='menu-label'>Conversation</div>", unsafe_allow_html=True)
+    for label, target_page, key in nav_items:
+        render_nav_button(label, target_page, key)
 
-    if st.button("📄 Report Analysis", key="sidebar_report", use_container_width=True):
-        st.session_state.page = "report"
-        st.rerun()
+    st.markdown("<div class='menu-label'>Health Tools</div>", unsafe_allow_html=True)
+    for label, target_page, key in tools_items:
+        render_nav_button(label, target_page, key)
 
-    if st.button("💊 Medicine Identifier", key="sidebar_medicine", use_container_width=True):
-        st.session_state.page = "medicine"
-        st.rerun()
-
-    if st.button("📋 Prescription Explainer", key="sidebar_prescription", use_container_width=True):
-        st.session_state.page = "prescription"
-        st.rerun()
-
-    if st.button("🧭 Symptom Checker", key="sidebar_symptom_checker", use_container_width=True):
-        st.session_state.page = "symptom_checker"
-        st.rerun()
-
-    if st.button("⏰ Reminders", key="sidebar_reminders", use_container_width=True):
-        st.session_state.page = "reminders"
-        st.rerun()
-
-    if st.button("🕘 History", key="sidebar_history", use_container_width=True):
-        st.session_state.page = "history"
-        st.rerun()
-
-    if st.button("👤 Profile", key="sidebar_profile", use_container_width=True):
-        st.session_state.page = "profile"
-        st.rerun()
-
-    st.markdown("---")
-
-    st.markdown("<div class='menu-label'>Language</div>", unsafe_allow_html=True)
-
-    st.session_state.language = st.selectbox(
-        "AI Response Language",
-        ["English", "Hindi", "Marathi"],
-        index=["English", "Hindi", "Marathi"].index(st.session_state.language),
-        label_visibility="collapsed"
-    )
-
-    st.markdown("---")
-
-    st.markdown("<div class='menu-label'>Upload Medical Report</div>", unsafe_allow_html=True)
-
-    uploaded_file = st.file_uploader(
-        "Choose PDF",
-        type=["pdf"],
-        label_visibility="collapsed"
-    )
-
-    report_text = ""
-
-    if uploaded_file:
-        report_text = extract_text_from_pdf(uploaded_file)
-        st.success("✅ Report Uploaded Successfully")
-
-    st.markdown("---")
-    st.markdown("<span class='version-tag'>MediAssist AI v1.0</span>", unsafe_allow_html=True)
-
+    st.markdown("<div class='menu-label'>Account</div>", unsafe_allow_html=True)
+    for label, target_page, key in account_items:
+        render_nav_button(label, target_page, key)
 
 # ---------------------------------------
 # Header
@@ -1146,3 +1158,5 @@ if st.session_state.page == "history":
 if st.session_state.page == "profile":
 
     render_profile_page()
+
+
