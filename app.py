@@ -25,37 +25,27 @@ def stream_words(text):
         time.sleep(0.025)
 
 
-
-
 def transcribe_audio(audio_file):
-
 
     recognizer = sr.Recognizer()
 
-
     try:
-
 
         with sr.AudioFile(audio_file) as source:
             audio = recognizer.record(source)
 
-
         return recognizer.recognize_google(audio)
-
 
     except sr.UnknownValueError:
         return None
-
 
     except sr.RequestError:
         st.error("Speech recognition service unavailable.")
         return None
 
-
 # ---------------------------------------
 # Page Config
 # ---------------------------------------
-
 
 st.set_page_config(
     page_title="MediAssist AI",
@@ -64,91 +54,70 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 # ---------------------------------------
 # Session State
 # ---------------------------------------
 
-
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
 
 if "report_analysis" not in st.session_state:
     st.session_state.report_analysis = ""
 
-
 if "page" not in st.session_state:
     st.session_state.page = "chat"
 
-
 if "medicine_result" not in st.session_state:
     st.session_state.medicine_result = ""
-
 
 # history is a dict: {chat_id: {"id", "title", "messages": [...]}}
 if "history" not in st.session_state:
     st.session_state.history = {}
 
-
 # tracks which saved conversation the current chat belongs to (None = unsaved/new)
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
 
-
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
-
 
 if "username" not in st.session_state:
     st.session_state.username = None
 
-
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = None
 
-
 if "language" not in st.session_state:
     st.session_state.language = "English"
-
-
 
 
 # ---------------------------------------
 # Login Gate
 # ---------------------------------------
 
-
 init_db()
-
 
 if not st.session_state.logged_in:
     render_login_page()
     st.stop()
 
 
-
-
 # ---------------------------------------
 # Helpers: save + continue conversations
 # ---------------------------------------
-
 
 def save_current_chat():
     """Persist (create or update) the current conversation in history."""
     if not st.session_state.messages:
         return
 
-
     if st.session_state.current_chat_id is None:
         st.session_state.current_chat_id = str(uuid.uuid4())
-
 
     first_user_msg = next(
         (m["content"] for m in st.session_state.messages if m["role"] == "user"),
         "New Chat"
     )
-
 
     st.session_state.history[st.session_state.current_chat_id] = {
         "id": st.session_state.current_chat_id,
@@ -157,48 +126,36 @@ def save_current_chat():
     }
 
 
-
-
 def ask_question(question):
     """Append the user's question, stream the AI's answer, and save the chat."""
     st.session_state.messages.append({"role": "user", "content": question})
-
 
     # Build patient profile context so the AI can personalize its answer
     user = get_user_by_username(st.session_state.username)
     profile_context = build_profile_context(user)
     language = st.session_state.get("language", "English")
 
-
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             answer = get_ai_response(question, profile_context, language)
         answer = st.write_stream(stream_words(answer))
 
-
     st.session_state.messages.append({"role": "assistant", "content": answer})
-
 
     save_current_chat()
     st.rerun()
-
-
 
 
 # ---------------------------------------
 # CSS
 # ---------------------------------------
 
-
 st.markdown("""
 <style>
 
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
-
 :root {
-
 
     --bg:          #05070C;
     --bg-2:        #090C14;
@@ -217,27 +174,22 @@ st.markdown("""
     --amber-soft:  rgba(251, 191, 36, 0.14);
 }
 
-
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
     color: var(--text);
 }
 
-
 /* ---------------- Keyframes ---------------- */
-
 
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
 }
-
 
 @keyframes pulseRing {
     0%   { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.45); }
@@ -245,25 +197,21 @@ html, body, [class*="css"] {
     100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0); }
 }
 
-
 @keyframes shimmerLine {
     0%   { background-position: -300px 0; }
     100% { background-position: 300px 0; }
 }
-
 
 @keyframes floatIcon {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     50%      { transform: translateY(-4px) rotate(3deg); }
 }
 
-
 @keyframes gradientShift {
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
-
 
 @keyframes auroraDrift {
     0%   { transform: translate(0px, 0px) scale(1); }
@@ -272,45 +220,37 @@ html, body, [class*="css"] {
     100% { transform: translate(0px, 0px) scale(1); }
 }
 
-
 @keyframes glowPulse {
     0%, 100% { opacity: 0.55; }
     50%      { opacity: 1; }
 }
-
 
 @keyframes borderTravel {
     0%   { background-position: 0% 0%; }
     100% { background-position: 200% 0%; }
 }
 
-
 @keyframes titleGlow {
     0%, 100% { filter: drop-shadow(0 0 6px rgba(45, 212, 191, 0.35)); }
     50%      { filter: drop-shadow(0 0 16px rgba(124, 58, 237, 0.45)); }
 }
-
 
 @keyframes sheen {
     0%   { transform: translateX(-120%) skewX(-15deg); }
     100% { transform: translateX(220%) skewX(-15deg); }
 }
 
-
 @keyframes spinRing {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
 }
-
 
 @keyframes dotPulse {
     0%, 100% { opacity: 1; transform: scale(1); }
     50%      { opacity: 0.35; transform: scale(0.75); }
 }
 
-
 /* ---------------- Base surfaces ---------------- */
-
 
 .stApp,
 [data-testid="stAppViewContainer"],
@@ -320,7 +260,6 @@ html, body, [class*="css"] {
 [data-testid="stBottomBlockContainer"] {
     background: var(--bg) !important;
 }
-
 
 /* Aurora background layer */
 [data-testid="stAppViewContainer"]::before {
@@ -336,7 +275,6 @@ html, body, [class*="css"] {
     animation: auroraDrift 14s ease-in-out infinite;
 }
 
-
 [data-testid="stAppViewContainer"]::after {
     content: "";
     position: fixed;
@@ -350,20 +288,17 @@ html, body, [class*="css"] {
     mask-image: radial-gradient(circle at 50% 0%, black, transparent 75%);
 }
 
-
 header[data-testid="stHeader"] {
     background: rgba(5, 7, 12, 0.6) !important;
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
 }
 
-
 [data-testid="stBottom"],
 [data-testid="stBottomBlockContainer"] {
     border-top: 1px solid var(--border);
     background: linear-gradient(180deg, transparent, rgba(5,7,12,0.9) 40%) !important;
 }
-
 
 .block-container {
     padding-top: 1.8rem;
@@ -373,9 +308,7 @@ header[data-testid="stHeader"] {
     z-index: 1;
 }
 
-
 /* ---------------- Sidebar ---------------- */
-
 
 section[data-testid="stSidebar"] {
     background: linear-gradient(180deg, rgba(13, 16, 24, 0.97), rgba(9, 12, 20, 0.97));
@@ -383,19 +316,16 @@ section[data-testid="stSidebar"] {
     box-shadow: 4px 0 30px rgba(0,0,0,0.35);
 }
 
-
 section[data-testid="stSidebar"] .block-container {
     padding-top: 1.6rem;
     animation: fadeIn 0.5s ease both;
 }
-
 
 /* Hide Streamlit's auto-generated multipage nav (pages/ folder links) —
    only the custom sidebar buttons below should be visible. */
 [data-testid="stSidebarNav"] {
     display: none !important;
 }
-
 
 .brand-name {
     font-family: 'Space Grotesk', sans-serif;
@@ -410,12 +340,7 @@ section[data-testid="stSidebar"] .block-container {
     animation: fadeInUp 0.5s ease both, gradientShift 6s linear infinite;
 }
 
-
 /* ---------------- Sidebar signature look ---------------- */
-
-
-/* ---------------- Sidebar signature look ---------------- */
-
 
 .sidebar-logo-wrap {
     display: flex;
@@ -424,7 +349,6 @@ section[data-testid="stSidebar"] .block-container {
     margin-bottom: 0.2rem;
     animation: fadeInUp 0.5s ease both;
 }
-
 
 .sidebar-avatar-ring {
     width: 46px;
@@ -439,7 +363,6 @@ section[data-testid="stSidebar"] .block-container {
     justify-content: center;
 }
 
-
 .sidebar-avatar-inner {
     width: 100%;
     height: 100%;
@@ -450,7 +373,6 @@ section[data-testid="stSidebar"] .block-container {
     justify-content: center;
     font-size: 1.25rem;
 }
-
 
 .sidebar-brand-title {
     font-family: 'Space Grotesk', sans-serif;
@@ -465,13 +387,11 @@ section[data-testid="stSidebar"] .block-container {
     animation: gradientShift 4s ease infinite;
 }
 
-
 .sidebar-tagline {
     font-size: 0.7rem;
     color: var(--text-dim);
     letter-spacing: 0.02em;
 }
-
 
 .status-pill {
     display: inline-flex;
@@ -489,7 +409,6 @@ section[data-testid="stSidebar"] .block-container {
     animation-delay: 0.08s;
 }
 
-
 .status-dot {
     width: 7px;
     height: 7px;
@@ -497,7 +416,6 @@ section[data-testid="stSidebar"] .block-container {
     background: var(--accent);
     animation: dotPulse 1.6s ease-in-out infinite;
 }
-
 
 .menu-label {
     font-size: 0.66rem;
@@ -511,7 +429,6 @@ section[data-testid="stSidebar"] .block-container {
     gap: 0.4rem;
 }
 
-
 .menu-label::after {
     content: "";
     flex: 1;
@@ -519,9 +436,7 @@ section[data-testid="stSidebar"] .block-container {
     background: linear-gradient(90deg, var(--border), transparent);
 }
 
-
 /* ---- Nav rail buttons ---- */
-
 
 section[data-testid="stSidebar"] .stButton>button {
     position: relative;
@@ -531,7 +446,6 @@ section[data-testid="stSidebar"] .stButton>button {
     margin-left: 4px;
     transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.25s ease;
 }
-
 
 /* colored glow chip that sits to the left of the button, outside it —
    this is the "highlighted" accent piece, brought back and reworked */
@@ -552,7 +466,6 @@ section[data-testid="stSidebar"] .stButton>button {
 }
 .nav-chip:hover::before { opacity: 1; height: 72%; }
 
-
 .nav-rail-new_chat        { --rail-color: var(--accent); }
 .nav-rail-history         { --rail-color: var(--accent-3); }
 .nav-rail-report          { --rail-color: var(--amber); }
@@ -561,7 +474,6 @@ section[data-testid="stSidebar"] .stButton>button {
 .nav-rail-symptom_checker { --rail-color: #38BDF8; }
 .nav-rail-reminders       { --rail-color: #FB7185; }
 .nav-rail-profile         { --rail-color: #A78BFA; }
-
 
 .nav-chip button {
     background: color-mix(in srgb, var(--rail-color) 8%, var(--panel-2)) !important;
@@ -572,7 +484,6 @@ section[data-testid="stSidebar"] .stButton>button {
     border-color: color-mix(in srgb, var(--rail-color) 45%, transparent) !important;
     transform: translateX(3px);
 }
-
 
 /* Active page: full glow treatment — this is the attractive highlight */
 .nav-chip.nav-rail-active::before {
@@ -590,14 +501,12 @@ section[data-testid="stSidebar"] .stButton>button {
 }
 /* ---------------- Headings / text ---------------- */
 
-
 h1, h2, h3 {
     color: var(--text) !important;
     font-family: 'Space Grotesk', sans-serif !important;
     font-weight: 700 !important;
     animation: fadeInUp 0.5s ease both;
 }
-
 
 h1 {
     background: linear-gradient(90deg, #ffffff 20%, var(--accent) 55%, var(--accent-2) 80%);
@@ -611,7 +520,6 @@ h1 {
     letter-spacing: -0.01em;
 }
 
-
 /* AI-generated markdown output (chat bubbles, symptom checker, report
    analysis, prescription explainer) uses ### (h3) headings on purpose
    so it doesn't get the big glowing h1 treatment above — keeps it
@@ -621,7 +529,6 @@ h1 {
     margin-top: 0.9rem !important;
     margin-bottom: 0.3rem !important;
 }
-
 
 [data-testid="stAppViewContainer"] p,
 [data-testid="stAppViewContainer"] span,
@@ -634,7 +541,6 @@ h1 {
     color: var(--text) !important;
 }
 
-
 .subtitle-caption {
     color: var(--text-dim) !important;
     animation: fadeInUp 0.6s ease both;
@@ -645,15 +551,12 @@ h1 {
     letter-spacing: 0.01em;
 }
 
-
 [data-testid="stHeadingWithActionElements"] {
     text-align: left !important;
     justify-content: flex-start !important;
 }
 
-
 /* ---------------- Buttons ---------------- */
-
 
 .stButton>button {
     position: relative;
@@ -669,7 +572,6 @@ h1 {
     transition: transform 0.18s ease, box-shadow 0.25s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
-
 .stButton>button::after {
     content: "";
     position: absolute;
@@ -679,11 +581,9 @@ h1 {
     transform: translateX(-120%) skewX(-15deg);
 }
 
-
 .stButton>button:hover::after {
     animation: sheen 0.9s ease forwards;
 }
-
 
 .stButton>button:hover {
     border-color: var(--accent);
@@ -693,11 +593,9 @@ h1 {
     box-shadow: 0 10px 28px rgba(45, 212, 191, 0.2), 0 0 0 1px rgba(45, 212, 191, 0.25) inset;
 }
 
-
 .stButton>button:active {
     transform: translateY(0px) scale(0.97);
 }
-
 
 section[data-testid="stSidebar"] .stButton>button {
     text-align: left;
@@ -707,14 +605,12 @@ section[data-testid="stSidebar"] .stButton>button {
     border-radius: 8px;
 }
 
-
 section[data-testid="stSidebar"] .stButton>button:hover {
     border-left: 2px solid var(--accent);
     background: var(--accent-soft);
     transform: translateX(4px);
     box-shadow: none;
 }
-
 
 .stButton>button[kind="primary"] {
     background: linear-gradient(135deg, var(--accent), var(--accent-2));
@@ -725,28 +621,23 @@ section[data-testid="stSidebar"] .stButton>button:hover {
     box-shadow: 0 8px 24px rgba(124, 58, 237, 0.25);
 }
 
-
 .stButton>button[kind="primary"]:hover {
     animation: pulseRing 1.4s ease infinite, gradientShift 2.5s ease infinite;
     filter: brightness(1.08);
     transform: translateY(-3px);
 }
 
-
 /* Suggested-question buttons: staggered entrance */
 div[data-testid="column"] .stButton {
     animation: fadeInUp 0.5s ease both;
 }
-
 
 div[data-testid="column"]:nth-of-type(1) .stButton:nth-of-type(1) { animation-delay: 0.05s; }
 div[data-testid="column"]:nth-of-type(1) .stButton:nth-of-type(2) { animation-delay: 0.15s; }
 div[data-testid="column"]:nth-of-type(2) .stButton:nth-of-type(1) { animation-delay: 0.10s; }
 div[data-testid="column"]:nth-of-type(2) .stButton:nth-of-type(2) { animation-delay: 0.20s; }
 
-
 /* ---------------- Chat ---------------- */
-
 
 .stChatMessage {
     border-radius: 16px;
@@ -761,13 +652,11 @@ div[data-testid="column"]:nth-of-type(2) .stButton:nth-of-type(2) { animation-de
     transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
 }
 
-
 .stChatMessage:hover {
     border-color: var(--border-glow);
     box-shadow: 0 10px 30px rgba(45, 212, 191, 0.12);
     transform: translateY(-1px);
 }
-
 
 [data-testid="stChatMessage"] p,
 [data-testid="stChatMessageContent"] p {
@@ -775,20 +664,17 @@ div[data-testid="column"]:nth-of-type(2) .stButton:nth-of-type(2) { animation-de
     line-height: 1.6;
 }
 
-
 [data-testid="stChatMessageAvatarUser"] {
     background: linear-gradient(135deg, var(--amber), #f97316) !important;
     box-shadow: 0 0 14px rgba(251, 191, 36, 0.45);
     transition: transform 0.2s ease;
 }
 
-
 [data-testid="stChatMessageAvatarAssistant"] {
     background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
     box-shadow: 0 0 14px rgba(45, 212, 191, 0.45);
     animation: floatIcon 3s ease-in-out infinite;
 }
-
 
 [data-testid="stChatInput"] {
     border-radius: 16px;
@@ -799,15 +685,12 @@ div[data-testid="column"]:nth-of-type(2) .stButton:nth-of-type(2) { animation-de
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-
 [data-testid="stChatInput"]:focus-within {
     border-color: var(--accent);
     box-shadow: 0 0 0 4px var(--accent-soft), 0 0 20px rgba(45, 212, 191, 0.25);
 }
 
-
 /* ---------------- File uploader ---------------- */
-
 
 [data-testid="stFileUploader"] {
     border-radius: 14px;
@@ -818,15 +701,12 @@ div[data-testid="column"]:nth-of-type(2) .stButton:nth-of-type(2) { animation-de
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-
 [data-testid="stFileUploader"]:hover {
     border-color: var(--accent);
     box-shadow: 0 0 24px rgba(45, 212, 191, 0.15);
 }
 
-
 /* ---------------- Expander ---------------- */
-
 
 .streamlit-expanderHeader {
     border-radius: 12px !important;
@@ -835,9 +715,7 @@ div[data-testid="column"]:nth-of-type(2) .stButton:nth-of-type(2) { animation-de
     backdrop-filter: blur(14px);
 }
 
-
 /* ---------------- Text area ---------------- */
-
 
 textarea {
     background: var(--panel-2) !important;
@@ -847,9 +725,7 @@ textarea {
     backdrop-filter: blur(14px);
 }
 
-
 /* ---------------- Alerts ---------------- */
-
 
 [data-testid="stAlert"] {
     border-radius: 12px;
@@ -860,17 +736,13 @@ textarea {
     box-shadow: 0 0 20px rgba(45, 212, 191, 0.12);
 }
 
-
 /* ---------------- Spinner ---------------- */
-
 
 [data-testid="stSpinner"] * {
     color: var(--accent) !important;
 }
 
-
 /* ---------------- Divider: animated shimmer line ---------------- */
-
 
 hr {
     border: none;
@@ -883,9 +755,7 @@ hr {
     opacity: 0.8;
 }
 
-
 /* ---------------- Scrollbar ---------------- */
-
 
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -894,9 +764,7 @@ hr {
     border-radius: 10px;
 }
 
-
 /* ---------------- Welcome screen ---------------- */
-
 
 .welcome-heading {
     text-align: center;
@@ -912,7 +780,6 @@ hr {
     animation: fadeInUp 0.5s ease both, gradientShift 6s linear infinite;
 }
 
-
 .suggested-label {
     color: var(--text-dim);
     font-weight: 600;
@@ -924,7 +791,6 @@ hr {
     position: relative;
     padding-left: 1.1rem;
 }
-
 
 .suggested-label::before {
     content: "";
@@ -940,7 +806,6 @@ hr {
     animation: glowPulse 1.8s ease-in-out infinite;
 }
 
-
 .version-tag {
     color: var(--text-dim);
     font-size: 0.75rem;
@@ -948,9 +813,7 @@ hr {
     letter-spacing: 0.03em;
 }
 
-
 /* ---------------- ECG signature divider ---------------- */
-
 
 .ecg-wrap {
     width: 100%;
@@ -960,18 +823,15 @@ hr {
     opacity: 0.9;
 }
 
-
 .ecg-wrap svg {
     width: 100%;
     height: 100%;
     display: block;
 }
 
-
 .ecg-base {
     stroke: rgba(255, 255, 255, 0.09);
 }
-
 
 .ecg-pulse {
     stroke: url(#ecgGrad);
@@ -980,15 +840,12 @@ hr {
     filter: drop-shadow(0 0 5px rgba(45, 212, 191, 0.55));
 }
 
-
 @keyframes ecgMove {
     from { stroke-dashoffset: 900; }
     to   { stroke-dashoffset: -900; }
 }
 
-
 /* ---------------- Audio input (mic) ---------------- */
-
 
 [data-testid="stAudioInput"] {
     border-radius: 14px;
@@ -998,24 +855,19 @@ hr {
     border: 1.5px dashed rgba(124, 58, 237, 0.35);
 }
 
-
 [data-testid="stAudioInput"]:hover {
     border-color: var(--accent-2);
     box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
 }
 
-
 </style>
 """, unsafe_allow_html=True)
-
 
 # ---------------------------------------
 # Sidebar
 # ---------------------------------------
 
-
 with st.sidebar:
-
 
     st.markdown("""
         <div class='sidebar-logo-wrap'>
@@ -1030,15 +882,12 @@ with st.sidebar:
         <div class='status-pill'><span class='status-dot'></span>AI Assistant Online</div>
     """, unsafe_allow_html=True)
 
-
     st.markdown("---")
-
 
     nav_items = [
         ("✦ New Chat", "chat", "sidebar_new_chat"),
         ("🕘 History", "history", "sidebar_history"),
     ]
-
 
     tools_items = [
         ("🧾 Report Analysis", "report", "sidebar_report"),
@@ -1048,11 +897,9 @@ with st.sidebar:
         ("⏰ Reminders", "reminders", "sidebar_reminders"),
     ]
 
-
     account_items = [
         ("🪪 Profile", "profile", "sidebar_profile"),
     ]
-
 
     def render_nav_button(label, target_page, key):
         is_active = st.session_state.page == target_page
@@ -1069,32 +916,56 @@ with st.sidebar:
             st.session_state.page = target_page
             st.rerun()
 
-
     st.markdown("<div class='menu-label'>Conversation</div>", unsafe_allow_html=True)
     for label, target_page, key in nav_items:
         render_nav_button(label, target_page, key)
-
 
     st.markdown("<div class='menu-label'>Health Tools</div>", unsafe_allow_html=True)
     for label, target_page, key in tools_items:
         render_nav_button(label, target_page, key)
 
-
     st.markdown("<div class='menu-label'>Account</div>", unsafe_allow_html=True)
     for label, target_page, key in account_items:
         render_nav_button(label, target_page, key)
+
+    st.markdown("---")
+
+    st.markdown("<div class='menu-label'>Language</div>", unsafe_allow_html=True)
+
+    st.session_state.language = st.selectbox(
+        "AI Response Language",
+        ["English", "Hindi", "Marathi"],
+        index=["English", "Hindi", "Marathi"].index(st.session_state.language),
+        label_visibility="collapsed"
+    )
+
+    st.markdown("---")
+
+    st.markdown("<div class='menu-label'>Upload Medical Report</div>", unsafe_allow_html=True)
+
+    uploaded_file = st.file_uploader(
+        "Choose PDF",
+        type=["pdf"],
+        label_visibility="collapsed"
+    )
+
+    report_text = ""
+
+    if uploaded_file:
+        report_text = extract_text_from_pdf(uploaded_file)
+        st.success("✅ Report Uploaded Successfully")
+
+    st.markdown("---")
+    st.markdown("<span class='version-tag'>MediAssist AI v1.0</span>", unsafe_allow_html=True)
 
 
 # ---------------------------------------
 # Header
 # ---------------------------------------
 
-
 st.title("🩺 MediAssist AI")
 
-
 st.markdown("<div class='subtitle-caption'>AI Medical Report Analysis &amp; Health Guidance</div>", unsafe_allow_html=True)
-
 
 st.markdown(
     """
@@ -1117,29 +988,22 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 # ---------------------------------------
 # Report Analysis Page
 # ---------------------------------------
 if st.session_state.page == "report":
 
-
     render_report_analysis_page(report_text)
-
-
 
 
 # ---------------------------------------
 # Medicine Identifier Page
 # ---------------------------------------
 
-
 if st.session_state.page == "medicine":
-
 
     st.subheader("💊 Medicine Identifier")
     st.caption("Upload a clear photo of the medicine strip, box, label, or pill.")
-
 
     medicine_image = st.file_uploader(
         "Upload Medicine Image",
@@ -1147,13 +1011,10 @@ if st.session_state.page == "medicine":
         key="medicine_image_uploader"
     )
 
-
     if medicine_image:
         st.image(medicine_image, caption="Uploaded Image", width=300)
 
-
     if st.button("🔍 Identify Medicine", type="primary"):
-
 
         if medicine_image is None:
             st.warning("Please upload an image first.")
@@ -1161,225 +1022,165 @@ if st.session_state.page == "medicine":
             with st.spinner("Analyzing Medicine Image..."):
                 st.session_state.medicine_result = identify_medicine(medicine_image)
 
-
     if st.session_state.medicine_result != "":
-
 
         st.markdown("---")
         st.markdown(st.session_state.medicine_result)
         st.markdown("---")
 
 
-
-
 # ---------------------------------------
 # Prescription Explainer Page
 # ---------------------------------------
 
-
 if st.session_state.page == "prescription":
 
-
     render_prescription_page()
-
-
 
 
 # ---------------------------------------
 # Symptom Checker Page
 # ---------------------------------------
 
-
 if st.session_state.page == "symptom_checker":
 
-
     render_symptom_checker_page()
-
-
 
 
 # ---------------------------------------
 # Reminders Page
 # ---------------------------------------
 
-
 if st.session_state.page == "reminders":
 
-
     render_reminders_page()
-
-
 
 
 # ---------------------------------------
 # Chat Page
 # ---------------------------------------
 
-
 if st.session_state.page == "chat":
-
 
     # -----------------------------------
     # Welcome Screen
     # -----------------------------------
 
-
     if len(st.session_state.messages) == 0:
-
 
         st.markdown(
             "<div class='welcome-heading'>How can I help you today?</div>",
             unsafe_allow_html=True
         )
 
-
     st.write("")
-
 
     st.markdown(
         "<div class='suggested-label'>💡 Suggested Questions</div>",
         unsafe_allow_html=True
     )
 
-
     col1, col2 = st.columns(2)
 
-
     with col1:
-
 
         if st.button("🩸 Explain CBC Report"):
             ask_question("Explain CBC Report")
 
-
         if st.button("🩺 What is Diabetes?"):
             ask_question("What is Diabetes?")
 
-
     with col2:
-
 
         if st.button("🧪 What is Creatinine?"):
             ask_question("What is Creatinine?")
 
-
         if st.button("🦟 Symptoms of Dengue?"):
             ask_question("Symptoms of Dengue")
-
 
     # -----------------------------------
     # Chat History
     # -----------------------------------
 
-
     for message in st.session_state.messages:
-
 
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-
 
     # -----------------------------------
     # Voice Input
     # -----------------------------------
 
-
     if "mic_key_counter" not in st.session_state:
         st.session_state.mic_key_counter = 0
-
 
     st.markdown(
         "<div class='suggested-label'>🎤 Ask By Voice</div>",
         unsafe_allow_html=True
     )
 
-
     audio = st.audio_input(
         "Speak",
         key=f"mic_{st.session_state.mic_key_counter}"
     )
 
-
     if audio:
-
 
         with st.spinner("🎧 Listening..."):
             voice = transcribe_audio(audio)
 
-
         if voice:
 
-
             st.session_state.mic_key_counter += 1
-
 
             with st.chat_message("user"):
                 st.markdown(voice)
 
-
             ask_question(voice)
-
 
         else:
             st.warning("Couldn't understand your voice.")
-
 
     # -----------------------------------
     # Chat Input
     # -----------------------------------
 
-
     prompt = st.chat_input("Ask a medical question...")
 
-
     if prompt:
-
 
         with st.chat_message("user"):
             st.markdown(prompt)
 
-
         ask_question(prompt)
-
-
 
 
 # ---------------------------------------
 # History Page
 # ---------------------------------------
 
-
 if st.session_state.page == "history":
 
-
     st.header("🕘 Chat History")
-
 
     if len(st.session_state.history) == 0:
         st.info("No chat history available.")
 
-
     else:
-
 
         # newest conversations first
         for chat_id in reversed(list(st.session_state.history.keys())):
 
-
             chat = st.session_state.history[chat_id]
 
-
             with st.expander(f"💬 {chat['title']}"):
-
 
                 for msg in chat["messages"]:
                     role_label = "👤 You" if msg["role"] == "user" else "🤖 MediAssist AI"
                     st.markdown(f"**{role_label}:**")
                     st.write(msg["content"])
 
-
                 col1, col2 = st.columns(2)
-
 
                 with col1:
                     if st.button("▶️ Continue Chat", key=f"continue_{chat_id}", use_container_width=True):
@@ -1387,7 +1188,6 @@ if st.session_state.page == "history":
                         st.session_state.current_chat_id = chat_id
                         st.session_state.page = "chat"
                         st.rerun()
-
 
                 with col2:
                     if st.button("🗑️ Delete", key=f"delete_history_{chat_id}", use_container_width=True):
@@ -1398,15 +1198,10 @@ if st.session_state.page == "history":
                         st.rerun()
 
 
-
-
 # ---------------------------------------
 # Profile Page
 # ---------------------------------------
 
-
 if st.session_state.page == "profile":
 
-
     render_profile_page()
-

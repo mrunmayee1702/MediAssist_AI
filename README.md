@@ -221,37 +221,45 @@ streamlit run app.py
 
 ### 🔐 Login Page
 
-_Add Screenshot_
+![Login Page](screenshots/login.png)
 
 ---
 
 ### 🤖 Medical Chatbot
 
-_Add Screenshot_
+![Medical Chatbot](screenshots/chatbot.png)
 
 ---
 
 ### 📄 Medical Report Analysis
 
-_Add Screenshot_
+![Report Analysis](screenshots/report_analysis(1).png)
+![Report Analysis](screenshots/report_analysis(2).png)
 
 ---
 
 ### 💊 Medicine Identifier
 
-_Add Screenshot_
+![Medicine Identifier](screenshots/medicine_identifier(1).png)
+![Medicine Identifier](screenshots/medicine_identifier(2).png)
 
 ---
 
 ### 🩺 Symptom Checker
 
-_Add Screenshot_
+![Symptom Checker](screenshots/symptom_checker.png)
 
 ---
 
 ### 🔔 Reminder Module
 
-_Add Screenshot_
+![Reminders](screenshots/reminders.png)
+
+---
+
+### 👤 Profile Section
+
+![Profile](screenshots/profile.png)
 
 ---
 
@@ -270,7 +278,7 @@ _Add Screenshot_
 # 👨‍💻 Contributors
 
 - **Mrunmayee Shinde**
-- Team Members
+- **Bhavesh Gambhirrao**
 
 ---
 
